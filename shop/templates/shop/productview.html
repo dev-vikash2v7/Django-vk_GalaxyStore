@@ -1,0 +1,33 @@
+{% extends 'shop/base.html '%}
+
+
+{% block title %} {{ product.prod_name }} VkGalaxy{% endblock %}
+
+{% block body %}
+
+<div class="container my-4">
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="row">
+                <img src="/media/{{ product.prod_image }}" width="350px" height="350px">
+            </div>
+
+            <div class="row">
+                <button class="btn btn-primary mx-4">Buy Now</button>
+                <button class="btn btn-success">Add To Cart</button>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+    
+                <h3> {{ product.prod_name }} </h3>
+                <strong>Rs : {{ product.prod_price }}</strong>
+                <br>
+                <p class="text-primary">{{ product.desc}}</p> 
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

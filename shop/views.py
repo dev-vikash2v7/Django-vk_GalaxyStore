@@ -1,31 +1,44 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+from .models import Product
 from math import ceil
 
-from .models import Product
 
 # Create your views here.
 def home(request):
     products = Product.objects.all()
 
     n = len(products)
-    nSlide = n//4 + ceil( (n/4) - (n//4) )
+    
+    if n%4 == 0:
+        nSlide = n/4
+    else:
+        nSlide = ceil(n//4 ) + 1 
+
+
+    # nSlide = n//4 + ceil( (n/4) - (n//4) )
 
     allProds = []
-    catProds = Product.objects.values('category' , 'id')
-    cats = { item['category'] for item in catProds}
+    catProds = Product.objects.values('category')
+
+    # cats = { item['category'] for item in catProds }
+
+    # apna logic
+    cats = set()
+    for item in catProds:
+        for key,value in item.items():
+            if key == 'category': 
+                cats.add(value)
+
+    
 
     for cat in cats:
+    
         prod = Product.objects.filter(category = cat)
         allProds.append([ prod , range(1, nSlide) , nSlide ])
 
-    # 1) params = {'no_of_slides' : nSlide , 'range':range(nSlide) , 'product':products}
-    # allProds = [ [products ,range(1,nSlide) , nSlide] ,  [products ,range(1,nSlide) , nSlide] ]
     params = {'allProds' : allProds}
-    # print(allProds)
-    # print(allProds[1])
-    #  print('nslide :', nSlide , 'n :',n)
 
     return render(request,'shop/home.html',params)
 
@@ -34,18 +47,20 @@ def about(request):
     return render(request,'shop/about.html')
 
 def contact(request):
-    return HttpResponse('this s shop contact ')
+   return render(request,'shop/contact.html')
 
 def tracker(request):
-    return HttpResponse('this s shop tracker')
+    return render(request,'shop/tracker.html')
 
 def search(request):
-    return HttpResponse('this s shop search')
+    return render(request,'shop/search.html')
 
-def productview(request):
-    return HttpResponse('this s shop productview')
+def productview(request, myid):
+    product_id = Product.objects.filter(id=myid)
+    params = {'product' : product_id[0]}
+    return render(request,'shop/productview.html',params)
 
 def checkout(request):
-    return HttpResponse('this s shop checkout')
+   return render(request,'shop/checkout.html')
 
 
