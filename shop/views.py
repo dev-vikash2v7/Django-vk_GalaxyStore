@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-from .models import Product
+from .models import Product,Contact
 from math import ceil
 
 
@@ -47,7 +47,16 @@ def about(request):
     return render(request,'shop/about.html')
 
 def contact(request):
-   return render(request,'shop/contact.html')
+    if request.method == 'POST':
+        name = request.POST.get('name',' ')
+        phone = request.POST.get('phone',' ')
+        email = request.POST.get('email',' ')
+        subject =request.POST.get('subject',' ')
+        message =request.POST.get('massage',' ')
+        
+        contact = Contact(name=name , phone=phone ,email=email ,subject=subject , message=message)
+        contact.save()
+    return render(request,'shop/contact.html')
 
 def tracker(request):
     return render(request,'shop/tracker.html')

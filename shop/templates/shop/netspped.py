@@ -1,0 +1,2 @@
+import speedtest
+print(speedtest)
