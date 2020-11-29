@@ -27,4 +27,20 @@ class Contact(models.Model):
 
     def __str__(self):
         return self.name
+
+class Order(models.Model):
+
+    order_id = models.AutoField(primary_key=True)
+    order_list = models.CharField(max_length=200)
+    name = models.CharField(max_length=50)
+    phone = models.IntegerField(default=0)
+    email = models.CharField(max_length=50,default='')
+    address = models.CharField(max_length=100)
+    city = models.CharField(max_length=10,default='')
+    state = models.CharField(max_length=10,default='')
+    zip = models.IntegerField(default=0)
+
+
+    def __str__(self):
+        return self.name + ' '+ self.email
     

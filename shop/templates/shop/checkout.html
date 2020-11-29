@@ -10,19 +10,8 @@
     <div class="col my-4">
         <h2> Step 1 - Checkout - Review Your Cart Items </h2>
 
-        <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Cras justo odio
-                <span class="badge badge-primary badge-pill">14</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Dapibus ac facilisis in
-                <span class="badge badge-primary badge-pill">2</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                Morbi leo risus
-                <span class="badge badge-primary badge-pill">1</span>
-            </li>
+        <ul class="list-group" id="checkout-item">
+          <!-- items of cart will show here -->
         </ul>
 
     </div>
@@ -30,49 +19,61 @@
     <div class="col my-4">
 
         <h2> Step 2 - Enter Address And Other Details : </h2>
-        <form action="/">
+        <form action="/checkout/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="order_list" id="order_list">
             <div class="form-row">
 
                 <div class="form-group col-md-6">
                     <label for="inputName">Name</label>
-                    <input type="text" class="form-control" id="inputName">
+                    <input type="text" class="form-control" id="inputName" name="name">
                 </div>
 
                 <div class="form-group col-md-6">
                     <label for="inputEmail4">Email</label>
-                    <input type="email" class="form-control" id="inputEmail4">
+                    <input type="email" class="form-control" id="inputEmail4" name="email">
                 </div>
 
             </div>
 
+            <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="inputEmail4">Phone</label>
+                <input type="tel" class="form-control" id="inputEmail4" name="phone">
+            </div>
+            </div>
+
             <div class="form-group">
                 <label for="inputAddress">Address</label>
-                <input type="text" class="form-control" id="inputAddress" placeholder="1234 Main St">
+                <input type="text" class="form-control add" id="inputAddress" placeholder="1234 Main St" name="add1">
             </div>
 
             <div class="form-group">
                 <label for="inputAddress2">Address 2</label>
-                <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor">
+                <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor" name="add2">
             </div>
 
             <div class="form-row">
 
                 <div class="form-group col-md-6">
                     <label for="inputCity">City</label>
-                    <input type="text" class="form-control" id="inputCity">
+                    <input type="text" class="form-control add" id="inputCity" name="city">
                 </div>
 
                 <div class="form-group col-md-4">
                     <label for="inputState">State</label>
-                    <select id="inputState" class="form-control">
-                        <option selected>Choose...</option>
-                        <option>...</option>
+                    <select id="inputState" class="form-control add" name="state">
+                        <option selected>Madhya Pradesh</option>
+                        <option>Rajasthan</option>
+                        <option>U.K</option>
+                        <option>J.K</option>
+                        <option>U.P</option>
                     </select>
                 </div>
 
                 <div class="form-group col-md-2">
                     <label for="inputZip">Zip</label>
-                    <input type="text" class="form-control" id="inputZip">
+                    <input type="text" class="form-control add" id="inputZip" name="zip">
                 </div>
 
             </div>
@@ -83,4 +84,51 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block js %}
+<script>
+    if(localStorage.getItem('cart') == null){
+        var cart = {}
+    }
+    else{
+        cart = JSON.parse(localStorage.getItem('cart'))
+
+    }
+
+    if($.isEmptyObject(cart)){
+        document.getElementById('checkout-item').innerHTML ='<p>Your cart is empty.</p> <p>PLs Add some item.</p>'
+    }
+    else{
+    var sum = 0;
+    for(item in cart){
+        sum += cart[item][0]
+        name = cart[item][1]
+        qty = cart[item][0]
+        document.getElementById('checkout-item').innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${name}
+                <span class="badge badge-primary badge-pill">${qty}</span>
+                </li>`
+    }}
+    document.getElementById('cart_no').innerHTML = sum;
+
+    order_list = document.getElementById('order_list')
+
+    $('#order_list').val(JSON.stringify(cart))
+    console.log(  $('#order_list').val(JSON.stringify(cart)))
+
+
+
+    {% if order_comp %}
+
+    localStorage.clear()
+    cart = {}
+    name = document.getElementById('inputName').innerText
+    address = document.querySelector('.add').innerText
+    alert(`ThankYou..{{ name }} of order id {{ order_id }}${name}</strong> . Your order will be deliverd to <b>${address}`)
+    location.href = '/'
+
+    {% endif %}
+    
+</script>
 {% endblock %}
