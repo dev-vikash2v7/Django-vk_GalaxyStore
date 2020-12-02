@@ -43,4 +43,14 @@ class Order(models.Model):
 
     def __str__(self):
         return self.name + ' '+ self.email
+
+class Tracker(models.Model):
+
+    tracker_id = models.AutoField(primary_key=True)
+    order_id = models.IntegerField(default=0)
+    trackerUpdate_desc = models.CharField(max_length=5000)
+    timeStamp = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.trackerUpdate_desc[0:7] + '...'
     

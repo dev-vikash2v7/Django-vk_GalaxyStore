@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
-from .models import Product, Contact ,Order
+from .models import Product, Contact, Order, Tracker
 from math import ceil
+import json
 
 # for login and logout
 from django.contrib.auth.models import User
@@ -67,10 +68,6 @@ def contact(request):
     return render(request, 'shop/contact.html')
 
 
-def tracker(request):
-    return render(request, 'shop/tracker.html')
-
-
 def search(request):
     return render(request, 'shop/search.html')
 
@@ -96,19 +93,73 @@ def checkout(request):
         zip = request.POST.get('zip', ' ')
 
         order_comp = True
-        params = {'order_comp' : order_comp} 
-
-
+        params = {'order_comp': order_comp}
 
         order = Order(order_list=order_list, name=name, phone=phone, email=email,
-                          address=add1 + ' '+add2, city=city, state=state, zip=zip)
+                      address=add1 + ' '+add2, city=city, state=state, zip=zip)
         order.save()
         order_comp = True
         id = order.order_id
-        params = {'order_comp' : order_comp ,'order_id':id ,'name':name} 
 
-        return render(request,'shop/checkout.html',params)
-    return render(request,'shop/checkout.html')
+        tracker_id = Tracker(
+            order_id=id, trackerUpdate_desc='Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)')
+        tracker_id.save()
+
+        params = {'order_comp': order_comp, 'order_id': id, 'name': name}
+
+        return render(request, 'shop/checkout.html', params)
+    return render(request, 'shop/checkout.html')
+
+# track the order
+
+
+def tracker(request):
+    print('In tracker func')
+    if request.method == 'POST':
+        OrderId = request.POST.get('OrderId')
+        email = request.POST.get('email', ' ')
+
+        try:
+            order = Order.objects.filter(order_id=OrderId, email=email)
+            print('order', order)
+            # <QuerySet [<Order: vikash verma v@gmail.com>]>
+
+            if len(order) > 0:
+
+                tracker_update = Tracker.objects.filter(order_id=OrderId)
+                # print('tracker list :', tracker_update)
+                # tracker list : <QuerySet [<Tracker: Your Or...>, <Tracker: come at...>]>
+
+                updates = []
+
+                for item in tracker_update:
+                    # print('item :', item)
+                    # item : come at...
+
+                    updates.append( {'desc': item.trackerUpdate_desc, 'time': item.timeStamp}   )
+                    # print('updates :', updates)
+                    # updates : [{'desc': 'coming soon', 'time': datetime.date(2020, 11, 30)}]
+
+                    response = json.dumps([updates, order[0].order_list ], default=str)
+                    # print('response : ', response, order[0])
+                    # response :  [[{"desc": "Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)", "time": "2020-12-02"}, {"desc": "come at bus stop of punasa", "time": "2020-12-02"}], "{"{\"pr7\":[3,\"printer\"],\"pr8\":[3,\"bluetooth\"]}"] vikash v@gmail.com
+
+                    print(order[0].order_list) 
+                    # {"pr7":[3,"printer"],"pr8":[3,"bluetooth"]}
+                    # print(order[0])# <class 'shop.models.Order'>
+
+                return HttpResponse(response)
+
+            else:
+                print('user not found')
+                return HttpResponse('{}')
+
+        except Exception as e:
+            print('error :', e)
+            return HttpResponse('{}')
+
+    return render(request, 'shop/tracker.html')
+
 
 def loginUser(request):
     if request.method == 'POST':
@@ -117,27 +168,21 @@ def loginUser(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        print(username,password)
-
         # ceheck if user has corect authanticate
-        user = authenticate(username=username , email = email ,password = password)
+        user = authenticate(username=username, email=email, password=password)
 
         if user is not None:
-            login(request,user)
+            login(request, user)
             # a backend authenticate the credentials
             return redirect('/')
 
         else:
             # no backend authenticte the credentials
-            return render(request,'login/login.html')
+            return render(request, 'login/login.html')
 
+    return render(request, 'login/login.html')
 
-    return render(request,'login/login.html')
 
 def logoutUser(request):
     logout(request)
     return redirect('/login')
-
-
-
-

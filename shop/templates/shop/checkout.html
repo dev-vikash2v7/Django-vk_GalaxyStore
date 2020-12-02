@@ -5,7 +5,14 @@
 
 {% block body %}
 
-<div class="container" style="top: 90px; position: relative;">
+
+<div class="container" style="top: 60px; position: relative;">
+
+       <div id="alertSuccess">
+            <!-- success mess will display here -->
+       </div>
+
+
     <h1 style="text-align: center;">------------CheckOut--------</h1>
     <div class="col my-4">
         <h2> Step 1 - Checkout - Review Your Cart Items </h2>
@@ -115,9 +122,6 @@
     order_list = document.getElementById('order_list')
 
     $('#order_list').val(JSON.stringify(cart))
-    console.log(  $('#order_list').val(JSON.stringify(cart)))
-
-
 
     {% if order_comp %}
 
@@ -125,10 +129,28 @@
     cart = {}
     name = document.getElementById('inputName').innerText
     address = document.querySelector('.add').innerText
-    alert(`ThankYou..{{ name }} of order id {{ order_id }}${name}</strong> . Your order will be deliverd to <b>${address}`)
-    location.href = '/'
+    // alert(`ThankYou..{{ name }} of order id {{ order_id }}. Your order will be deliverd to {{address}}`)
 
+    // <!-- success eass  -->
+    function home(){
+        location.href = '/'
+    }
+
+    message =  `
+    <div class="alert alert-success alert-dismissible fade show" role="alert" id="alertSuccess">
+    <strong>Success !!</strong>Your <b>Order Id  is {{ order_id }} </b>Use This TO Track your Order.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick = 'home()' >
+      <span aria-hidden="true">Click To return Home &times;</span>
+    </button>
+  </div>`
+
+  $('#alertSuccess').append(message)
+
+
+   
     {% endif %}
-    
+
 </script>
+    
+
 {% endblock %}
