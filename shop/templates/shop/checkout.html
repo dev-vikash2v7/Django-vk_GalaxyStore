@@ -1,4 +1,4 @@
-{% extends 'shop/base.html '%}
+{% extends 'shop/base.html' %}
 
 
 {% block title %} checkout {% endblock %}
@@ -20,6 +20,13 @@
         <ul class="list-group" id="checkout-item">
           <!-- items of cart will show here -->
         </ul>
+        
+  <!-- breadcum navbar -->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mt-2">
+      <li class="breadcrumb-item" id="price">Total price will add</li>
+    </ol>
+  </nav>
 
     </div>
 
@@ -52,24 +59,21 @@
 
             <div class="form-group">
                 <label for="inputAddress">Address</label>
-                <input type="text" class="form-control add" id="inputAddress" placeholder="1234 Main St" name="add1">
+                <input type="text" class="form-control address" id="inputAddress" placeholder="1234 Main St" name="add1">
             </div>
 
-            <div class="form-group">
-                <label for="inputAddress2">Address 2</label>
-                <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor" name="add2">
-            </div>
+           
 
             <div class="form-row">
 
                 <div class="form-group col-md-6">
                     <label for="inputCity">City</label>
-                    <input type="text" class="form-control add" id="inputCity" name="city">
+                    <input type="text" class="form-control address" id="inputCity" name="city">
                 </div>
 
                 <div class="form-group col-md-4">
                     <label for="inputState">State</label>
-                    <select id="inputState" class="form-control add" name="state">
+                    <select id="inputState" class="form-control address" name="state">
                         <option selected>Madhya Pradesh</option>
                         <option>Rajasthan</option>
                         <option>U.K</option>
@@ -80,7 +84,7 @@
 
                 <div class="form-group col-md-2">
                     <label for="inputZip">Zip</label>
-                    <input type="text" class="form-control add" id="inputZip" name="zip">
+                    <input type="text" class="form-control address" id="inputZip" name="zip">
                 </div>
 
             </div>
@@ -106,39 +110,41 @@
     if($.isEmptyObject(cart)){
         document.getElementById('checkout-item').innerHTML ='<p>Your cart is empty.</p> <p>PLs Add some item.</p>'
     }
+
     else{
     var sum = 0;
+    var totalPrice = 0 ;
+
     for(item in cart){
         sum += cart[item][0]
-        name = cart[item][1]
+
         qty = cart[item][0]
+        name = cart[item][1]
+        itemPrice = cart[item][2]
+        totalPrice +=  qty * itemPrice
+
         document.getElementById('checkout-item').innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
                 ${name}
                 <span class="badge badge-primary badge-pill">${qty}</span>
                 </li>`
+    document.getElementById('price').innerHTML = `<h6>Your Total Price is <b>${totalPrice} Rs.</b>`
     }}
-    document.getElementById('cart_no').innerHTML = sum;
 
-    order_list = document.getElementById('order_list')
-
-    $('#order_list').val(JSON.stringify(cart))
+  
 
     {% if order_comp %}
 
     localStorage.clear()
     cart = {}
-    name = document.getElementById('inputName').innerText
-    address = document.querySelector('.add').innerText
-    // alert(`ThankYou..{{ name }} of order id {{ order_id }}. Your order will be deliverd to {{address}}`)
+  
 
-    // <!-- success eass  -->
     function home(){
         location.href = '/'
     }
 
     message =  `
     <div class="alert alert-success alert-dismissible fade show" role="alert" id="alertSuccess">
-    <strong>Success !!</strong>Your <b>Order Id  is {{ order_id }} </b>Use This TO Track your Order.
+    <strong>Success !!</strong>Your Order will be deliverd to <b>{{address}}</b> . <b>Order Id  is {{ order_id }} .. Use This To Track your Order. </b> <br>Thanks for purchasing <b>{{name}}</b> 
     <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick = 'home()' >
       <span aria-hidden="true">Click To return Home &times;</span>
     </button>

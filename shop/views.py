@@ -14,8 +14,8 @@ from django.contrib.auth import logout, authenticate, login
 def home(request):
     print(request.user)
 
-    if request.user.is_anonymous:
-        return redirect('/login')
+    #if request.user.is_anonymous:
+    #    return redirect('/login')
 
     products = Product.objects.all()
 
@@ -65,6 +65,8 @@ def contact(request):
         contact = Contact(name=name, phone=phone, email=email,
                           subject=subject, message=message)
         contact.save()
+        return render(request, 'shop/contact.html',{'submit':True,'name':name})
+
     return render(request, 'shop/contact.html')
 
 
@@ -86,8 +88,7 @@ def checkout(request):
         name = request.POST.get('name', ' ')
         phone = request.POST.get('phone', ' ')
         email = request.POST.get('email', ' ')
-        add1 = request.POST.get('add1', ' ')
-        add2 = request.POST.get('add2', ' ')
+        address = request.POST.get('add1', ' ')
         city = request.POST.get('city', ' ')
         state = request.POST.get('state', ' ')
         zip = request.POST.get('zip', ' ')
@@ -96,7 +97,7 @@ def checkout(request):
         params = {'order_comp': order_comp}
 
         order = Order(order_list=order_list, name=name, phone=phone, email=email,
-                      address=add1 + ' '+add2, city=city, state=state, zip=zip)
+                      address=address , city=city, state=state, zip=zip)
         order.save()
         order_comp = True
         id = order.order_id
@@ -105,7 +106,7 @@ def checkout(request):
             order_id=id, trackerUpdate_desc='Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)')
         tracker_id.save()
 
-        params = {'order_comp': order_comp, 'order_id': id, 'name': name}
+        params = {'order_comp': order_comp, 'order_id': id, 'name': name,'address':address}
 
         return render(request, 'shop/checkout.html', params)
     return render(request, 'shop/checkout.html')
