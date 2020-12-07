@@ -19,6 +19,7 @@ class Product(models.Model):
 class Contact(models.Model):
 
     contact_id = models.AutoField(primary_key=True)
+    print(contact_id)
     name = models.CharField(max_length=50)
     phone = models.IntegerField(default=0)
     email = models.CharField(max_length=50,default='')

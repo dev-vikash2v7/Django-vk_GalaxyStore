@@ -1,0 +1,44 @@
+{% extends 'blog/base.html' %}
+
+
+{% block title %} VkGalaxy Blog {% endblock %}
+
+{% block body %}
+
+
+
+
+<div class="container mt-4">
+
+  <div class="row mb-2 my-2" style="margin: auto auto;">
+    {% for item in myposts %}
+
+
+    <div class="col-md-6">
+      <div class="row no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative" style="width: 100%;">
+        <div class="col p-4 d-flex flex-column position-static">
+          <strong class="d-inline-block mb-2 text-success">{{ item.title }}</strong>
+          <h3 class="mb-0">{{ item.head0}}</h3>
+          <div class="mb-1 text-muted">{{ item.post_date }}</div>
+          <p class="mb-auto">{{ item.cont0 | slice:'0:100' }}...</p>
+          <a href="blogpost/{{item.id}}" class="stretched-link">Continue reading</a>
+        </div>
+
+        <div class="col-auto d-none d-lg-block">
+          <img class="bd-placeholder-img" width="200" height="250" role="img" aria-label="Placeholder: Thumbnail"
+            src="/media/{{ item.thumbnail }}">
+
+        </div>
+      </div>
+    </div>
+
+    {% if forloop.counter|divisibleby:2 %}
+  </div><div class="row mb-2">
+  {% endif %}
+
+  {% endfor %}
+
+
+
+</div>
+{% endblock %}
