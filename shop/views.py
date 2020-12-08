@@ -9,12 +9,17 @@ import json
 from django.contrib.auth.models import User
 from django.contrib.auth import logout, authenticate, login
 
+# for payment
+from Paytm import Checksum
+from django.views.decorators.csrf import csrf_exempt
+MERCHANT_KEY = 'kbzk1DSbJiV_O3p5'
+
 
 # Create your views here.
 def home(request):
     print(request.user)
 
-    #if request.user.is_anonymous:
+    # if request.user.is_anonymous:
     #    return redirect('/login')
 
     products = Product.objects.all()
@@ -65,7 +70,7 @@ def contact(request):
         contact = Contact(name=name, phone=phone, email=email,
                           subject=subject, message=message)
         contact.save()
-        return render(request, 'shop/contact.html',{'submit':True,'name':name})
+        return render(request, 'shop/contact.html', {'submit': True, 'name': name})
 
     return render(request, 'shop/contact.html')
 
@@ -84,7 +89,8 @@ def checkout(request):
     if request.method == 'POST':
 
         order_list = request.POST.get('order_list', ' ')
-
+        amount = request.POST.get('amount', ' ')
+        
         name = request.POST.get('name', ' ')
         phone = request.POST.get('phone', ' ')
         email = request.POST.get('email', ' ')
@@ -97,7 +103,7 @@ def checkout(request):
         params = {'order_comp': order_comp}
 
         order = Order(order_list=order_list, name=name, phone=phone, email=email,
-                      address=address , city=city, state=state, zip=zip)
+                      address=address, city=city, state=state, zip=zip,amount=amount)
         order.save()
         order_comp = True
         id = order.order_id
@@ -106,14 +112,63 @@ def checkout(request):
             order_id=id, trackerUpdate_desc='Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)')
         tracker_id.save()
 
-        params = {'order_comp': order_comp, 'order_id': id, 'name': name,'address':address}
+        params = {'order_comp': order_comp, 'order_id': id,
+                  'name': name, 'address': address}
 
-        return render(request, 'shop/checkout.html', params)
+        # return render(request, 'shop/checkout.html', params)
+        
+        data_dict = {
+            'MID': 'WorldP64425807474247',
+            'ORDER_ID': str(order.order_id*10),
+            'TXN_AMOUNT': str(amount),
+            'CUST_ID': email,
+            'INDUSTRY_TYPE_ID': 'Retail',
+            'WEBSITE': 'WEBSTAGING',
+            'CHANNEL_ID': 'WEB',
+            'CALLBACK_URL': 'http://127.0.0.1:8000/shop/handlerequest/',
+        }
+        print('data_dict = ',data_dict)
+        data_dict['CHECKSUMHASH'] = Checksum.generate_checksum(
+            data_dict, MERCHANT_KEY)
+
+        # request paytm to send amount here after user comp
+        return render(request, 'shop/paytm.html', {'data_dict': data_dict})
+
     return render(request, 'shop/checkout.html')
 
+# for payment with paytm
+@csrf_exempt
+def handlerequest(request):
+    # paytm sent post request here
+    form = request.POST
+    response_dict = {}
+
+    for i in form.keys():
+        response_dict[i] = form[i]
+        if i == 'CHECKSUMHASH':
+            checksum = form[i]
+
+    verify = Checksum.verify_checksum(response_dict,MERCHANT_KEY,checksum)
+    print('verify :',verify)
+    print('response dict := ',response_dict)
+    if verify:
+        if response_dict['RESPCODE'] == '01':
+            print('Payment Successfull')
+        else:
+            print('paument was not successfull because',
+                  response_dict['RESPMSG'])
+    else:
+        print('paument was not successfull because', response_dict['RESPMSG'])
+    return render( request , 'shop/paymentStatus.html',{'response':response_dict} )
+
+
+
+
+
+
+
+
 # track the order
-
-
 def tracker(request):
     print('In tracker func')
     if request.method == 'POST':
@@ -137,15 +192,17 @@ def tracker(request):
                     # print('item :', item)
                     # item : come at...
 
-                    updates.append( {'desc': item.trackerUpdate_desc, 'time': item.timeStamp}   )
+                    updates.append(
+                        {'desc': item.trackerUpdate_desc, 'time': item.timeStamp})
                     # print('updates :', updates)
                     # updates : [{'desc': 'coming soon', 'time': datetime.date(2020, 11, 30)}]
 
-                    response = json.dumps([updates, order[0].order_list ], default=str)
+                    response = json.dumps(
+                        [updates, order[0].order_list], default=str)
                     # print('response : ', response, order[0])
                     # response :  [[{"desc": "Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)", "time": "2020-12-02"}, {"desc": "come at bus stop of punasa", "time": "2020-12-02"}], "{"{\"pr7\":[3,\"printer\"],\"pr8\":[3,\"bluetooth\"]}"] vikash v@gmail.com
 
-                    print(order[0].order_list) 
+                    print(order[0].order_list)
                     # {"pr7":[3,"printer"],"pr8":[3,"bluetooth"]}
                     # print(order[0])# <class 'shop.models.Order'>
 
@@ -160,6 +217,12 @@ def tracker(request):
             return HttpResponse('{}')
 
     return render(request, 'shop/tracker.html')
+
+
+
+
+
+
 
 
 def loginUser(request):

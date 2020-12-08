@@ -36,6 +36,8 @@
         <form action="/checkout/" method="post">
             {% csrf_token %}
             <input type="hidden" name="order_list" id="order_list">
+            <input type="hidden" name="amount" id="amount">
+
             <div class="form-row">
 
                 <div class="form-group col-md-6">
@@ -97,7 +99,8 @@
 
 {% endblock %}
 
-{% block js %}
+
+    {% block js %}
 <script>
     if(localStorage.getItem('cart') == null){
         var cart = {}
@@ -123,12 +126,17 @@
         itemPrice = cart[item][2]
         totalPrice +=  qty * itemPrice
 
+        document.getElementById('order_list').value += `[Qty : ${qty} , ItemNmae : ${name} , Price : ${itemPrice}] ,`
+
         document.getElementById('checkout-item').innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
                 ${name}
                 <span class="badge badge-primary badge-pill">${qty}</span>
                 </li>`
     document.getElementById('price').innerHTML = `<h6>Your Total Price is <b>${totalPrice} Rs.</b>`
     }}
+    console.log(
+        document.getElementById('order_list').value)
+    document.getElementById('amount').value=totalPrice
 
   
 
@@ -152,11 +160,8 @@
 
   $('#alertSuccess').append(message)
 
-
-   
     {% endif %}
-
 </script>
-    
-
 {% endblock %}
+
+    
