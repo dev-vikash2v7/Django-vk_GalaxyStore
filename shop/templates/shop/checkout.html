@@ -35,6 +35,7 @@
         <h2> Step 2 - Enter Address And Other Details : </h2>
         <form action="/checkout/" method="post">
             {% csrf_token %}
+
             <input type="hidden" name="order_list" id="order_list">
             <input type="hidden" name="amount" id="amount">
 
@@ -126,7 +127,6 @@
         itemPrice = cart[item][2]
         totalPrice +=  qty * itemPrice
 
-        document.getElementById('order_list').value += `[Qty : ${qty} , ItemNmae : ${name} , Price : ${itemPrice}] ,`
 
         document.getElementById('checkout-item').innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
                 ${name}
@@ -134,8 +134,8 @@
                 </li>`
     document.getElementById('price').innerHTML = `<h6>Your Total Price is <b>${totalPrice} Rs.</b>`
     }}
-    console.log(
-        document.getElementById('order_list').value)
+    
+    document.getElementById('order_list').value = JSON.stringify(cart)
     document.getElementById('amount').value=totalPrice
 
   

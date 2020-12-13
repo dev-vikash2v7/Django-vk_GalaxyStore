@@ -8,15 +8,21 @@
     .badge-primary {
         font-style: oblique;
         font-size: 25px;
-        color: #fff;
-        background-color: black;
+        color: black;
+        background-color: yellow;
+    }
+    .head{
+        font-weight: 600;
+        font-style: italic;
+        text-decoration: underline;
+        font-size: larger;
     }
 </style>
 {% endblock %}
 
 {% block body %}
 
-<div class="container" style="top: 90px; position: relative;">
+<div class="container">
     <h1 style="text-align: center;">------------Orders Tracker--------</h1>
     <div class="col my-4">
         <h2>Enter Details To Tracke Your Order </h2>
@@ -49,15 +55,18 @@
     <div class="col my-4">
         <h2> Your Order Status </h2>
         <div class="col my-4">
+
             <ul class="list-group" id="items">
                 Enter Order Id and Email To Track Your Order
             </ul>
+
         </div>
-<hr>
+        <hr>
+
         <div class="col my-4">
-            <ul class="list-group" id="itemDetails">
-                
-            </ul>
+            <ol class="list-group" id="itemDetails">
+            
+            </ol>
         </div>
 
     </div>
@@ -86,38 +95,44 @@
                 encode: true
 
             })
-                .done(function (data) {  //data is equal to the resopnse var getting from views.py in str format 
-                    // console.log('data = ', data);
-                    // data type is str
-                    // data = [[{"desc": "Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)", "time": "2020-12-02"}, {"desc": "come at bus stop of punasa", "time": "2020-12-02"}], "{\"pr7\":[3,\"printer\"],\"pr8\":[3,\"bluetooth\"]}"]
+                .done(function (data) {  //data is equal to the resopnse var getting from views.py in str 
+                    $('#itemDetails').empty()
+                    data = JSON.parse(data)  //converts the str-list to its original list  
 
-                    data = JSON.parse(data); //converts the str-list to its original list  
-                    updates = data[0]; //converts the str-list to its original list  
-                    // console.log('updates =', updates)
-                    // (2) [{…}, {…}]
-                    //  0: {desc: "Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)", time: "2020-12-02"}
-                    // 1: {desc: "come at bus stop of punasa", time: "2020-12-02"}
-
-
-
-
-
-                    if (updates.length > 0 && updates != {}) {
-
+                    if (data['track'] == 'success') {
+                        updates = data.updates
 
                         for (i = 0; i < updates.length; i++) {
+                            let desc = data.updates[i].desc
+                            let time = data.updates[i].time
 
-                            let desc = updates[i]['desc']
-                            let time = updates[i]['time']
-
-                            myStr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            myStr = 
+                            `<li class="list-group-item d-flex justify-content-between align-items-center">
                     ${desc}
                     <span class="badge badge-primary badge-pill">${time}</span>
                     </li>`
-
                             $('#items').append(myStr)
+
                         }
+                        myStr = ''
+                        cart = JSON.parse(data.items)
+                        for (item in cart) {
+                            let qty = cart[item][0]
+                            let name = cart[item][1]
+                            let itemPrice = cart[item][2]
+
+                            myStr +=
+                                `<li class="list-group-item d-flex justify-content-between align-items-center">
+                 ${name}<span>${itemPrice}Rs.</span><span>${qty}</span>`
+
+                }
+                                $('#itemDetails').append(
+                                    `<li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span class = 'head'>ITEM NAME</span><span class = 'head'>ITEM PRICE</span><span class = 'head'>Quantity</span></li>`+myStr)
+                        
+                
                     }
+
                     else {
                         myStr = `<li class="list-group-item d-flex justify-content-between align-items-center">
                     <p>Sorry. Your Order could not tracke . Make sure you have correctly added Order Id and Email .</p><P>Thank You</p>
@@ -125,26 +140,9 @@
                         $('#items').append(myStr)
 
                     }
-                    cart = JSON.parse(data[1])
-                    // console.log('cart items = ',cart)
-                        // cart items =  {pr7: Array(2), pr8: Array(2)}
-                        // pr7: (2) [3, "printer"]
-                        // pr8: (2) [3, "bluetooth"]
 
-                    for(item in cart){
-                        let qty = cart[item][0]
-                        let name = cart[item][1] 
 
-                        myStr += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    ${name}
-                    <span class="badge badge-primary badge-pill">${qty}</span>
-                    </li>`
-
-                        $('#itemDetails').append(myStr)
-                    }
-
-                })
-
-        });
+                });
+        })
     </script>
     {% endblock %}

@@ -17,7 +17,7 @@ MERCHANT_KEY = 'kbzk1DSbJiV_O3p5'
 
 # Create your views here.
 def home(request):
-    print(request.user)
+    # print(request.user)
 
     # if request.user.is_anonymous:
     #    return redirect('/login')
@@ -51,7 +51,6 @@ def home(request):
         allProds.append([prod, range(1, nSlide), nSlide])
 
     params = {'allProds': allProds}
-
     return render(request, 'shop/home.html', params)
 
 
@@ -75,8 +74,48 @@ def contact(request):
     return render(request, 'shop/contact.html')
 
 
+
+
 def search(request):
-    return render(request, 'shop/search.html')
+    def searchMatch(query , item):
+        if query in item.prod_name.lower():
+            print( item.prod_name)
+            return True
+        else:
+            return False
+
+    query = request.GET.get('Search',' ')
+    products = Product.objects.all()
+
+    n = len(products)
+
+    if n % 4 == 0:
+        nSlide = n/4
+    else:
+        nSlide = ceil(n//4) + 1
+    allProds = []
+    catProds = Product.objects.values('category')
+
+    cats = set()
+    for item in catProds:
+        for key, value in item.items():
+            if key == 'category':
+                cats.add(value)
+                
+    prod = []
+    for cat in cats:
+        prodtemp = Product.objects.filter(category=cat)
+        for item in prodtemp:
+            if searchMatch(query,item):
+                prod.append(item)
+
+    if len(prod) != 0:
+        allProds.append([prod, range(1, nSlide), nSlide])
+        params = {'allProds': allProds , 'msg': f'{len(prod)} Search Results Found for {query}','search':True}
+
+    else:
+        params = {'allProds': allProds , 'msg':'Search result did not match any item . Please make sure to enter correct query .','search':True}
+    return render(request, 'shop/home.html',params)
 
 
 def productview(request, myid):
@@ -170,51 +209,39 @@ def handlerequest(request):
 
 # track the order
 def tracker(request):
-    print('In tracker func')
     if request.method == 'POST':
-        OrderId = request.POST.get('OrderId')
+        OrderId = request.POST.get('OrderId',' ')
         email = request.POST.get('email', ' ')
 
         try:
             order = Order.objects.filter(order_id=OrderId, email=email)
-            print('order', order)
-            # <QuerySet [<Order: vikash verma v@gmail.com>]>
 
             if len(order) > 0:
 
                 tracker_update = Tracker.objects.filter(order_id=OrderId)
-                # print('tracker list :', tracker_update)
-                # tracker list : <QuerySet [<Tracker: Your Or...>, <Tracker: come at...>]>
 
                 updates = []
 
                 for item in tracker_update:
-                    # print('item :', item)
-                    # item : come at...
-
+                  
                     updates.append(
                         {'desc': item.trackerUpdate_desc, 'time': item.timeStamp})
-                    # print('updates :', updates)
-                    # updates : [{'desc': 'coming soon', 'time': datetime.date(2020, 11, 30)}]
+                 
+                response = json.dumps(
+                        {'track':'success','updates':updates, 'items':order[0].order_list }, default=str)
+                  
 
-                    response = json.dumps(
-                        [updates, order[0].order_list], default=str)
-                    # print('response : ', response, order[0])
-                    # response :  [[{"desc": "Your Order reach to Chickdhaliya . 10 min mein phunch jaega ... thoda dheeraj rkho. :)", "time": "2020-12-02"}, {"desc": "come at bus stop of punasa", "time": "2020-12-02"}], "{"{\"pr7\":[3,\"printer\"],\"pr8\":[3,\"bluetooth\"]}"] vikash v@gmail.com
-
-                    print(order[0].order_list)
-                    # {"pr7":[3,"printer"],"pr8":[3,"bluetooth"]}
-                    # print(order[0])# <class 'shop.models.Order'>
+                print('response',response)
+                 
 
                 return HttpResponse(response)
 
             else:
-                print('user not found')
-                return HttpResponse('{}')
+                return HttpResponse("{'track':'no items'}")
 
         except Exception as e:
             print('error :', e)
-            return HttpResponse('{}')
+            return HttpResponse("{'track':'error'}")
 
     return render(request, 'shop/tracker.html')
 
