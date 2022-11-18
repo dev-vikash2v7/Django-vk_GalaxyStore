@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
-from .models import Product, Contact, Order, Tracker
+from .models import *
 from math import ceil
 import json
 
@@ -12,46 +12,39 @@ from django.contrib.auth import logout, authenticate, login
 # for payment
 from Paytm import Checksum
 from django.views.decorators.csrf import csrf_exempt
+
 MERCHANT_KEY = 'kbzk1DSbJiV_O3p5'
 
 
 # Create your views here.
 def home(request):
-    # print(request.user)
 
-    # if request.user.is_anonymous:
-    #    return redirect('/login')
+    categories = Category.objects.all()
 
-    products = Product.objects.all()
+    data = {} ;
 
-    n = len(products)
+    for cat in categories:
+        products = Product.get_products_by_category( cat) 
+        # print( products, "\n\n")
 
-    if n % 4 == 0:
-        nSlide = n/4
-    else:
-        nSlide = ceil(n//4) + 1
+        n = len(products)
 
-    # nSlide = n//4 + ceil( (n/4) - (n//4) )
+        if n % 4 == 0:
+            nSlide = n/4
+        else:
+            nSlide = ceil(n//4) + 1
 
-    allProds = []
-    catProds = Product.objects.values('category')
+        data[cat] = { 'products' : products ,'slide_range' :range(1, nSlide) }
+        # data[cat.name] = [ products , range(1, nSlide) , nSlide ]
 
-    # cats = { item['category'] for item in catProds }
+    # for cat in categories:
+    context = {'products_by_categories' : data}
 
-    # apna logic
-    cats = set()
-    for item in catProds:
-        for key, value in item.items():
-            if key == 'category':
-                cats.add(value)
+    return render(request, 'shop/home.html' , context)
 
-    for cat in cats:
 
-        prod = Product.objects.filter(category=cat)
-        allProds.append([prod, range(1, nSlide), nSlide])
 
-    params = {'allProds': allProds}
-    return render(request, 'shop/home.html', params)
+
 
 
 def about(request):
@@ -66,8 +59,7 @@ def contact(request):
         subject = request.POST.get('subject', ' ')
         message = request.POST.get('massage', ' ')
 
-        contact = Contact(name=name, phone=phone, email=email,
-                          subject=subject, message=message)
+        contact = User(name=name, phone=phone, email=email)
         contact.save()
         return render(request, 'shop/contact.html', {'submit': True, 'name': name})
 
@@ -125,6 +117,9 @@ def productview(request, myid):
 
 
 def checkout(request):
+    if request.user.is_anonymous:
+       return redirect('/login')
+       
     if request.method == 'POST':
 
         order_list = request.POST.get('order_list', ' ')
@@ -174,6 +169,9 @@ def checkout(request):
         return render(request, 'shop/paytm.html', {'data_dict': data_dict})
 
     return render(request, 'shop/checkout.html')
+
+
+
 
 # for payment with paytm
 @csrf_exempt
@@ -269,11 +267,16 @@ def loginUser(request):
 
         else:
             # no backend authenticte the credentials
-            return render(request, 'login/login.html')
+            return render(request, 'shop/login.html')
 
-    return render(request, 'login/login.html')
+    return render(request, 'shop/login.html')
 
 
 def logoutUser(request):
     logout(request)
     return redirect('/login')
+
+
+def signupUser(request):
+    return render(request, 'shop/signup.html')
+
