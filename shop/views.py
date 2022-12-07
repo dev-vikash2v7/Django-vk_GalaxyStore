@@ -30,7 +30,7 @@ def home(request):
         n = len(products)
 
         if n % 4 == 0:
-            nSlide = n/4
+            nSlide = n//4
         else:
             nSlide = ceil(n//4) + 1
 
