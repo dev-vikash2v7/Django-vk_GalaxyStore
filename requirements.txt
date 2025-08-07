@@ -3,6 +3,8 @@ distlib==0.3.1
 pipenv==2020.8.13
 gunicorn==20.0.4
 pycryptodome==3.9.9
-sqlparse==0.3.1
-django
+Django==5.1
 pillow
+whitenoise
+sqlparse
+
